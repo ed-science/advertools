@@ -527,7 +527,7 @@ def sitemap_to_df(sitemap_url, max_workers=8, recursive=True):
                     hexes = [hex(id(f)) for f in to_do]
                     index = hexes.index(future_str)
                     error_df['sitemap'] = sitemap_url_list[index]
-                    logging.warning(msg=str(e) + ' ' + sitemap_url_list[index])
+                    logging.warning(msg=f'{str(e)} ' + sitemap_url_list[index])
                     multi_sitemap_df = multi_sitemap_df.append(error_df,
                                                                ignore_index=True)
         return multi_sitemap_df

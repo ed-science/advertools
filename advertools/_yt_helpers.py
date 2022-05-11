@@ -13,11 +13,7 @@ def _dict_product(d):
     items = list(d.items())
     keys = [x[0] for x in items]
     values = [x[1] for x in items]
-    dicts = []
-    for prod in product(*values):
-        tempdict = dict(zip(keys, prod))
-        dicts.append(tempdict)
-    return dicts
+    return [dict(zip(keys, prod)) for prod in product(*values)]
 
 
 def _json_to_df(json_resp, params):
@@ -58,7 +54,7 @@ def _combine_requests(params, base_url, count, max_allowed):
                        if params[k] is not None}
     for p in supplied_params:
         if (not isinstance(supplied_params[p], int)) and len(supplied_params[p]) == 0:
-            raise ValueError('please make sure you supply a value for {}'.format(p))
+            raise ValueError(f'please make sure you supply a value for {p}')
         if isinstance(supplied_params[p], (str, int)):
             supplied_params[p] = [supplied_params[p]]
 
@@ -81,7 +77,8 @@ def _combine_requests(params, base_url, count, max_allowed):
             responses.append(_json_to_df(resp, param))
             if 'errors' in responses[-1]:
                 continue
-            if iteration_list != [None]:
-                if responses[-1]['totalResults'].values[-1] < sum(iteration_list[:i + 1]):
-                    break
+            if iteration_list != [None] and responses[-1][
+                'totalResults'
+            ].values[-1] < sum(iteration_list[: i + 1]):
+                break
     return pd.concat(responses, ignore_index=True, sort=False).drop(columns=['param_key'])

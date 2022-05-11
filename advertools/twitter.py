@@ -196,7 +196,7 @@ def _get_counts(number=None, default=None):
     if not number:
         number = 1
     div = divmod(number, default)
-    result = [default for x in range(div[0])]
+    result = [default for _ in range(div[0])]
     if div[1] != 0:
         return result + [div[1]]
     return result
@@ -246,10 +246,12 @@ def make_dataframe(func):
             finallist = []
             for sublist in responses:
                 finallist.extend(sublist['ids'])
-            finaldict = {'previous_cursor': responses[0]['previous_cursor'],
-                         'next_cursor': responses[-1]['next_cursor'],
-                         'ids': finallist}
-            return finaldict
+            return {
+                'previous_cursor': responses[0]['previous_cursor'],
+                'next_cursor': responses[-1]['next_cursor'],
+                'ids': finallist,
+            }
+
 
         final_df = pd.DataFrame()
         for resp in responses:

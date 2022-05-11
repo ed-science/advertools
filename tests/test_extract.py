@@ -301,16 +301,16 @@ summary_overviews = {k: [d[key] for key in d if 'overview' in key][0]
                      for k, d in summaries.items()}
 
 test_overviews = {
-    'currency': [6, 10, 10/6, 8],
+    'currency': [6, 10, 10 / 6, 8],
     'emoji': [3, 3, 1.0, 2],
     'exclamation': [5, 6, 1.2, 2],
     'hashtag': [12, 15, 1.25, 14],
     'intense': [6, 6, 1.0, 6],
-    'mention': [12, 14, 14/12, 13],
-    'number': [7, 7, 7/7, 5],
+    'mention': [12, 14, 14 / 12, 13],
+    'number': [7, 7, 1, 5],
     'question': [5, 5, 1.0, 3],
-    'word_full': [8, 7, 7/8, 2],
-    'word_not_full': [8, 13, 13/8, 7],
+    'word_full': [8, 7, 7 / 8, 2],
+    'word_not_full': [8, 13, 13 / 8, 7],
     'url': [4, 4, 1.0, 4],
 }
 

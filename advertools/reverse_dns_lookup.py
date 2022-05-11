@@ -131,18 +131,22 @@ def reverse_dns_lookup(ip_list, max_workers=_default_max_workders):
     hosts = []
     if system == 'Darwin':
         with futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
-            for ip, host in zip(ip_list, executor.map(_single_request,
-                                                      count_df['ip_address'])):
-                hosts.append(host)
+            hosts.extend(
+                host
+                for ip, host in zip(
+                    ip_list,
+                    executor.map(_single_request, count_df['ip_address']),
+                )
+            )
+
     else:
         with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            for host in executor.map(_single_request, count_df['ip_address']):
-                hosts.append(host)
+            hosts.extend(iter(executor.map(_single_request, count_df['ip_address'])))
     df = pd.DataFrame(hosts)
     columns = ['ip', 'hostname', 'aliaslist', 'ipaddrlist', 'errors']
     if df.shape[1] == 4:
         columns = columns[:-1]
     df.columns = columns
-    final_df = pd.merge(count_df, df, left_on='ip_address',
-                        right_on='ip', how='left').drop('ip', axis=1)
-    return final_df
+    return pd.merge(
+        count_df, df, left_on='ip_address', right_on='ip', how='left'
+    ).drop('ip', axis=1)

@@ -200,15 +200,15 @@ def ad_from_string(s, slots=(30, 30, 30, 90, 90, 15, 15), sep=None,
      '', '', '', '', '', '']
     """
     str_words = s.split(sep=sep)
-    text_ad = ['' for x in range(len(slots)+1)]
+    text_ad = ['' for _ in range(len(slots)+1)]
     counter = 0
 
     for i, slot in enumerate(slots):
-        while counter <= len(str_words) - 1:
-            if len(text_ad[i] + str_words[counter]) + 1 > slot:
-                break
-            text_ad[i] += (' ' + str_words[counter] if text_ad[i]
-                           else str_words[counter])
+        while (
+            counter <= len(str_words) - 1
+            and not len(text_ad[i] + str_words[counter]) + 1 > slot
+        ):
+            text_ad[i] += f' {str_words[counter]}' if text_ad[i] else str_words[counter]
             counter += 1
 
     text_ad[-1] = (sep.join(str_words[counter:])

@@ -177,7 +177,7 @@ def url_to_df(urls, decode=True):
         split.update(**parsed_query)
         dirs = split['path'].strip('/').split('/')
         if dirs[0]:
-            dir_cols = {'dir_{}'.format(n): d for n, d in enumerate(dirs, 1)}
+            dir_cols = {f'dir_{n}': d for n, d in enumerate(dirs, 1)}
             split.update(**dir_cols)
         split_list.append(split)
     df = pd.DataFrame(split_list)

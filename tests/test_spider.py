@@ -34,7 +34,7 @@ def test_numbered_duplicates_returns_same_num_of_items():
 
 def test_numbered_duplicates_returns_correct_items():
     numbers = ['one', 'two', 'three', 'four']
-    for i in range(1000):
+    for _ in range(1000):
         sample = random.choices(numbers, k=7)
         result = _numbered_duplicates(sample)
         result_split = [num.rsplit('_', 1)[0] for num in result]
@@ -50,7 +50,7 @@ def test_json_to_dict_returns_dict():
 def test_json_to_dict_contains_number():
     for i in range(1, 6):
         result = _json_to_dict(jsonobj, i)
-        to_test = 'jsonld_' + str(i) + '_'
+        to_test = f'jsonld_{str(i)}_'
         assert isinstance(result, dict)
         assert all(to_test in key for key in result)
 

@@ -188,7 +188,7 @@ def knowledge_graph(key, query=None, ids=None, languages=None, types=None,
         nonlocal result_df
         resp = requests.get(base_url, params=param)
         param_log = ', '.join([k + '=' + str(v) for k, v in param.items()])
-        logging.info(msg='Requesting: ' + param_log)
+        logging.info(msg=f'Requesting: {param_log}')
         df = pd.json_normalize(resp.json(), record_path='itemListElement')
         del param['key']
         param_columns = {k: [v] if df.empty else v

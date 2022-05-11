@@ -483,16 +483,14 @@ def logs_to_df(log_file, output_file, errors_file, log_format, fields=None):
                         err_line = line[:-1] if line.endswith('\n') else line
                         print('@@'.join([str(linenumber), err_line, str(e)]),
                               file=err)
-                    pass
                 if linenumber % 250_000 == 0:
                     print(f'Parsed {linenumber:>15,} lines.', end='\r')
                     df = pd.DataFrame(parsed_lines, columns=columns)
                     df.to_parquet(tempdir_name / f'file_{linenumber}.parquet')
                     parsed_lines.clear()
-            else:
-                print(f'Parsed {linenumber:>15,} lines.', end='\r')
-                df = pd.DataFrame(parsed_lines, columns=columns)
-                df.to_parquet(tempdir_name / f'file_{linenumber}.parquet')
+            print(f'Parsed {linenumber:>15,} lines.', end='\r')
+            df = pd.DataFrame(parsed_lines, columns=columns)
+            df.to_parquet(tempdir_name / f'file_{linenumber}.parquet')
             final_df = pd.read_parquet(tempdir_name)
             try:
                 final_df['status'] = final_df['status'].astype('category')
@@ -532,13 +530,13 @@ def crawllogs_to_df(logs_file_path):
     time_middleware_level = "(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d) \[(.*?)\] ([A-Z]+): "
     time_middleware_level_error = "(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d) \[(.*?)\] (ERROR): "
 
-    filtered_regex = time_middleware_level + "(Filtered) offsite request to '(.*?)': <([A-Z]+) (.*?)>" 
+    filtered_regex = time_middleware_level + "(Filtered) offsite request to '(.*?)': <([A-Z]+) (.*?)>"
     filtered_cols = ['time', 'middleware', 'level', 'message', 'domain', 'method', 'url']
 
-    crawled_regex = time_middleware_level + "(Crawled) \((\d\d\d)\) <([A-Z]+) (.*?)> \(referer: (.*?)\)" 
+    crawled_regex = time_middleware_level + "(Crawled) \((\d\d\d)\) <([A-Z]+) (.*?)> \(referer: (.*?)\)"
     crawled_cols = ['time', 'middleware', 'level', 'message', 'status', 'method', 'url', 'referer']
 
-    scraped_regex = time_middleware_level + "(Scraped) from <(\d\d\d) (.*?)>" 
+    scraped_regex = time_middleware_level + "(Scraped) from <(\d\d\d) (.*?)>"
     scraped_cols = ['time', 'middleware', 'level', 'message', 'status', 'url']
 
     redirect_regex = time_middleware_level + "(Redirect)ing \((\d\d\d)\) to <([A-Z]+) (.*?)> from <([A-Z]+) (.*?)>"
@@ -553,7 +551,7 @@ def crawllogs_to_df(logs_file_path):
     error_level_regex = time_middleware_level_error  + '(.*)? (\d\d\d) (http.*)'
     error_level_cols = ['time', 'middleware', 'level', 'message', 'status', 'url']
 
-    generic_error_regex = time_middleware_level_error + '(.*)'
+    generic_error_regex = f'{time_middleware_level_error}(.*)'
     generic_error_cols = ['time', 'middleware', 'level', 'message']
 
     filtered_lines = []

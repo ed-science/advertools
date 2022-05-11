@@ -369,52 +369,50 @@ def robotstxt_to_df(robotstxt_url, output_file=None):
         raise ValueError('Please specify a file with a `.jl` extension.')
     if isinstance(robotstxt_url, (list, tuple, set, pd.Series)):
         return _robots_multi(robotstxt_url, output_file)
-    else:
-        try:
-            logging.info(msg='Getting: ' + robotstxt_url)
-            robots_open = urlopen(Request(robotstxt_url, headers=headers),
-                                  timeout=45)
-            robots_read = robots_open.read()
-            if robots_read.startswith(gzip_start_bytes):
-                data = gzip.decompress(robots_read)
-                robots_text = data.decode('utf-8-sig').splitlines()
-            else:
-                robots_text = robots_read.decode('utf-8-sig').splitlines()
-            lines = []
-            for line in robots_text:
-                if line.strip():
-                    if line.strip().startswith('#'):
-                        lines.append(['comment',
-                                      (line.replace('#', '').strip())])
-                    else:
-                        split = line.split(':', maxsplit=1)
-                        lines.append([split[0].strip(), split[1].strip()])
-            df = pd.DataFrame(lines, columns=['directive', 'content'])
-            try:
-                etag_lastmod = {header.lower().replace('-', '_'): val
-                                for header, val in robots_open.getheaders()
-                                if header.lower() in ['etag', 'last-modified']}
-                df = df.assign(**etag_lastmod)
-                if 'last_modified' in df:
-                    df['robotstxt_last_modified'] = pd.to_datetime(df['last_modified'])
-                    del df['last_modified']
-            except AttributeError:
-                pass
-        except Exception as e:
-            df = pd.DataFrame({'errors': [str(e)]})
-        try:
-            df['robotstxt_url'] = [robots_open.url] if df.empty else robots_open.url
-        except UnboundLocalError:
-            df['robotstxt_url'] = [robotstxt_url] if df.empty else robotstxt_url
-        df['download_date'] = pd.Timestamp.now(tz='UTC')
-        if output_file is not None:
-            with open(output_file, 'a') as file:
-                file.write(df.to_json(orient='records',
-                                      lines=True,
-                                      date_format='iso'))
-                file.write('\n')
+    try:
+        logging.info(msg='Getting: ' + robotstxt_url)
+        robots_open = urlopen(Request(robotstxt_url, headers=headers),
+                              timeout=45)
+        robots_read = robots_open.read()
+        if robots_read.startswith(gzip_start_bytes):
+            data = gzip.decompress(robots_read)
+            robots_text = data.decode('utf-8-sig').splitlines()
         else:
-            return df
+            robots_text = robots_read.decode('utf-8-sig').splitlines()
+        lines = []
+        for line in robots_text:
+            if line.strip():
+                if line.strip().startswith('#'):
+                    lines.append(['comment',
+                                  (line.replace('#', '').strip())])
+                else:
+                    split = line.split(':', maxsplit=1)
+                    lines.append([split[0].strip(), split[1].strip()])
+        df = pd.DataFrame(lines, columns=['directive', 'content'])
+        try:
+            etag_lastmod = {header.lower().replace('-', '_'): val
+                            for header, val in robots_open.getheaders()
+                            if header.lower() in ['etag', 'last-modified']}
+            df = df.assign(**etag_lastmod)
+            if 'last_modified' in df:
+                df['robotstxt_last_modified'] = pd.to_datetime(df['last_modified'])
+                del df['last_modified']
+        except AttributeError:
+            pass
+    except Exception as e:
+        df = pd.DataFrame({'errors': [str(e)]})
+    try:
+        df['robotstxt_url'] = [robots_open.url] if df.empty else robots_open.url
+    except UnboundLocalError:
+        df['robotstxt_url'] = [robotstxt_url] if df.empty else robotstxt_url
+    df['download_date'] = pd.Timestamp.now(tz='UTC')
+    if output_file is None:
+        return df
+    with open(output_file, 'a') as file:
+        file.write(df.to_json(orient='records',
+                              lines=True,
+                              date_format='iso'))
+        file.write('\n')
 
 
 def _robots_multi(robots_url_list, output_file=None):
@@ -483,10 +481,12 @@ def robotstxt_test(robotstxt_url, user_agents, urls):
 
     test_list = []
     for path, agent in product(urls, user_agents):
-        d = dict()
-        d['user_agent'] = agent
-        d['url_path'] = path
-        d['can_fetch'] = rp.can_fetch(path, agent)
+        d = {
+            'user_agent': agent,
+            'url_path': path,
+            'can_fetch': rp.can_fetch(path, agent),
+        }
+
         test_list.append(d)
     df = pd.DataFrame(test_list)
     df.insert(0, 'robotstxt_url', robotstxt_url)

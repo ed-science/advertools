@@ -58,10 +58,11 @@ class KeywordTests(unittest.TestCase):
         test_combs = []
         for i in range(2, 4):
             for prod in products:
-                for comb in combinations([prod] + words, i):
-                    if prod not in comb:
-                        continue
-                    test_combs.append(' '.join(comb))
+                test_combs.extend(
+                    ' '.join(comb)
+                    for comb in combinations([prod] + words, i)
+                    if prod in comb
+                )
 
         df = kw_generate(products, words, match_types=['Exact'],
                          order_matters=False)
@@ -73,10 +74,11 @@ class KeywordTests(unittest.TestCase):
         test_combs = []
         for i in range(2, 4):
             for prod in products:
-                for perm in permutations([prod] + words, i):
-                    if prod not in perm:
-                        continue
-                    test_combs.append(' '.join(perm))
+                test_combs.extend(
+                    ' '.join(perm)
+                    for perm in permutations([prod] + words, i)
+                    if prod in perm
+                )
 
         df = kw_generate(products, words, match_types=['Exact'],
                          order_matters=True)
@@ -89,8 +91,7 @@ class KeywordTests(unittest.TestCase):
 
     def test_ad_group_names_capitalized(self):
         df = kw_generate(['oNe', 'TWO', 'THree', 'four', 'fivE'], ['six'])
-        self.assertEqual(set(['One', 'Two', 'Three', 'Four', 'Five']),
-                         set(df['Ad Group']))
+        self.assertEqual({'One', 'Two', 'Three', 'Four', 'Five'}, set(df['Ad Group']))
 
     def test_modified_adds_plus_sign_as_many_as_spaces(self):
         df = kw_generate(['one', 'two'], ['three'], match_types=['Modified'])

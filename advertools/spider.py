@@ -435,9 +435,7 @@ def _crawl_or_not(url,
     if exclude_url_params is not None:
         if exclude_url_params is True and qs:
             return False
-        if exclude_url_params is True and not qs:
-            pass
-        else:
+        if exclude_url_params is not True:
             exclude_params_in_url = not bool(set(exclude_url_params).intersection(qs))
             supplied_conditions.append(exclude_params_in_url)
 
@@ -455,17 +453,22 @@ def _crawl_or_not(url,
     return all(supplied_conditions)
 
 def _extract_images(response):
-    page_has_images = response.xpath('//img')
-    if page_has_images:
+    if page_has_images := response.xpath('//img'):
         img_attributes = reduce(set.union,
                                 [set(x.attrib.keys())
                                  for x in page_has_images])
         img_attributes = img_attributes.intersection(_IMG_ATTRS)
-        d = dict()
-        for im_attr in img_attributes:
-            d['img_' + im_attr] = '@@'.join([im.attrib.get(im_attr) or ''
-                                            for im in response.xpath('//img')])
-        return d
+        return {
+            'img_'
+            + im_attr: '@@'.join(
+                [
+                    im.attrib.get(im_attr) or ''
+                    for im in response.xpath('//img')
+                ]
+            )
+            for im_attr in img_attributes
+        }
+
     return {}
 
 
@@ -586,10 +589,7 @@ def _numbered_duplicates(items):
 def _json_to_dict(jsonobj, i=None):
     try:
         df = json_normalize(jsonobj)
-        if i:
-            df = df.add_prefix('jsonld_{}_'.format(i))
-        else:
-            df = df.add_prefix('jsonld_')
+        df = df.add_prefix(f'jsonld_{i}_') if i else df.add_prefix('jsonld_')
         return dict(zip(df.columns, df.values[0]))
     except Exception as e:
         logger = logging.getLogger(__name__)
@@ -617,15 +617,14 @@ tags_xpaths = {
 def _extract_content(resp, **tags_xpaths):
     d = {}
     for tag, xpath in tags_xpaths.items():
-        if not tag.startswith('h'):
-            value = '@@'.join(resp.xpath(xpath).getall())
-            if value:
-                d.update({tag: value})
-        else:
-            value = '@@'.join([h.root.text_content()
-                               for h in resp.xpath(xpath)])
-            if value:
-                d.update({tag: value})
+        value = (
+            '@@'.join([h.root.text_content() for h in resp.xpath(xpath)])
+            if tag.startswith('h')
+            else '@@'.join(resp.xpath(xpath).getall())
+        )
+
+        if value:
+            d[tag] = value
     return d
 
 

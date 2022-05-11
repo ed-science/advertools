@@ -445,8 +445,7 @@ def _split_by_comma(s, length=50):
     str_split = s.split(',')
     str_list = []
     for i in range(0, len(str_split) + length, length):
-        temp_str = ','.join(str_split[i:i+length])
-        if temp_str:
+        if temp_str := ','.join(str_split[i : i + length]):
             str_list.append(temp_str)
     return str_list
 
@@ -533,11 +532,7 @@ def _dict_product(d):
     items = list(d.items())
     keys = [x[0] for x in items]
     values = [x[1] for x in items]
-    dicts = []
-    for prod in product(*values):
-        tempdict = dict(zip(keys, prod))
-        dicts.append(tempdict)
-    return dicts
+    return [dict(zip(keys, prod)) for prod in product(*values)]
 
 
 def serp_goog(q, cx, key, c2coff=None, cr=None,
@@ -711,12 +706,13 @@ def serp_goog(q, cx, key, c2coff=None, cr=None,
             supplied_params[p] = [supplied_params[p]]
 
     for p in supplied_params:
-        if p in SERP_GOOG_VALID_VALS:
-            if not set(supplied_params[p]).issubset(SERP_GOOG_VALID_VALS[p]):
-                raise ValueError('Please make sure you provide a'
-                                 ' valid value for "{}", valid values:\n'
-                                 '{}'.format(p,
-                                             sorted(SERP_GOOG_VALID_VALS[p])))
+        if p in SERP_GOOG_VALID_VALS and not set(supplied_params[p]).issubset(
+            SERP_GOOG_VALID_VALS[p]
+        ):
+            raise ValueError('Please make sure you provide a'
+                             ' valid value for "{}", valid values:\n'
+                             '{}'.format(p,
+                                         sorted(SERP_GOOG_VALID_VALS[p])))
     params_list = _dict_product(supplied_params)
     base_url = 'https://www.googleapis.com/customsearch/v1?'
     specified_cols = ['searchTerms', 'rank', 'title', 'snippet',
@@ -724,7 +720,7 @@ def serp_goog(q, cx, key, c2coff=None, cr=None,
     responses = []
     for param in params_list:
         param_log = ', '.join([k + '=' + str(v) for k, v in param.items()])
-        logging.info(msg='Requesting: ' + param_log)
+        logging.info(msg=f'Requesting: {param_log}')
         resp = requests.get(base_url, params=param)
         if resp.status_code >= 400:
             raise Exception(resp.json())
@@ -737,19 +733,16 @@ def serp_goog(q, cx, key, c2coff=None, cr=None,
         if int(search_info['totalResults']) == 0:
             df = pd.DataFrame(columns=specified_cols, index=range(1))
             df['searchTerms'] = request_metadata['searchTerms']
-            # These keys don't appear in the response so they have to be
-            # added manually
-            for missing in ['lr', 'num', 'start', 'c2coff']:
-                if missing in params_list[i]:
-                    df[missing] = params_list[i][missing]
         else:
             df = pd.DataFrame(resp.json()['items'])
             df['cseName'] = resp.json()['context']['title']
             start_idx = request_metadata['startIndex']
             df['rank'] = range(start_idx, start_idx + len(df))
-            for missing in ['lr', 'num', 'start', 'c2coff']:
-                if missing in params_list[i]:
-                    df[missing] = params_list[i][missing]
+        # These keys don't appear in the response so they have to be
+        # added manually
+        for missing in ['lr', 'num', 'start', 'c2coff']:
+            if missing in params_list[i]:
+                df[missing] = params_list[i][missing]
         meta_columns = {**request_metadata, **search_info}
         df = df.assign(**meta_columns)
         df['queryTime'] = datetime.datetime.now(tz=datetime.timezone.utc)

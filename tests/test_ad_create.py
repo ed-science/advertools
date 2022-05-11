@@ -15,7 +15,7 @@ def test_raises_error_for_long_input_strings():
 def test_all_replacements_used():
     replacements = ['one', 'two', 'three']
     result = ad_create('Hello {}', replacements, 'fallback', capitalize=False)
-    assert all([rep in ' '.join(result) for rep in replacements])
+    assert all(rep in ' '.join(result) for rep in replacements)
 
 
 def test_fallback_used_if_string_long():

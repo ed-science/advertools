@@ -35,7 +35,7 @@ epilog = _make_headline('full documentation at https://bit.ly/adv_docs')
 
 def _split_options(options):
     opsplit = [op.split('=', maxsplit=1) for op in options]
-    d = {k: v for k, v in opsplit}
+    d = dict(opsplit)
     for k, v in d.items():
         if v == 'True':
             d[k] = True
@@ -74,18 +74,16 @@ def _cli_reverse_dns_lookup(ip_list, max_workers=600):
 
     hosts = []
     with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        for host in executor.map(_single_request, count_df['ip_address']):
-            hosts.append(host)
-
+        hosts.extend(iter(executor.map(_single_request, count_df['ip_address'])))
     df = pd.DataFrame(hosts)
     columns = ['ip', 'hostname', 'aliaslist', 'ipaddrlist', 'errors']
     if df.shape[1] == 4:
         columns = columns[:-1]
     df.columns = columns
 
-    final_df = pd.merge(count_df, df, left_on='ip_address',
-                        right_on='ip', how='left').drop('ip', axis=1)
-    return final_df
+    return pd.merge(
+        count_df, df, left_on='ip_address', right_on='ip', how='left'
+    ).drop('ip', axis=1)
 
 
 class RawTextDefArgFormatter(argparse.RawTextHelpFormatter,
@@ -277,10 +275,7 @@ which will become column names in the parsed compressed file''')
     # dns --------------------------
 
     def dns(args):
-        if sys.stdin.isatty():
-            ip_list = args.ip_list
-        else:
-            ip_list = sys.stdin.read().split()
+        ip_list = args.ip_list if sys.stdin.isatty() else sys.stdin.read().split()
         if not ip_list:
             print('please provide a value for ip_list', file=sys.stderr)
             sys.exit(1)
@@ -352,10 +347,7 @@ do you want combinations and permutations, or just combinations?
     # word_freq --------------------------
 
     def word_freq(args):
-        if sys.stdin.isatty():
-            text_list = args.text_list
-        else:
-            text_list = sys.stdin.read().split()
+        text_list = args.text_list if sys.stdin.isatty() else sys.stdin.read().split()
         if not text_list:
             print('please provide a value for text_list', file=sys.stderr)
             sys.exit(1)

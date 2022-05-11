@@ -41,8 +41,7 @@ def test_sitemap_index():
     errors = {'WARNING: Sitemap contains a link to itself',
               'HTTP Error 404: Not Found'}
     assert errors.issubset(result['errors'])
-    assert all([col in result
-               for col in ['loc', 'download_date', 'sitemap']])
+    assert all(col in result for col in ['loc', 'download_date', 'sitemap'])
 
 
 def test_error_sitemap():

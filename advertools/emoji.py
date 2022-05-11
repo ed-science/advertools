@@ -4773,36 +4773,36 @@ def extract_emoji(text_list):
     emoji_flat_text = [EMOJI_ENTRIES[em].name for em in emoji_flat]
     emoji_groups = [EMOJI_ENTRIES[em].group for em in emoji_flat]
     emoji_sub_groups = [EMOJI_ENTRIES[em].sub_group for em in emoji_flat]
-    summary = {
+    return {
         'emoji': emoji,
-        'emoji_text': [[EMOJI_ENTRIES[em].name for em in em_list]
-                       for em_list in emoji],
+        'emoji_text': [
+            [EMOJI_ENTRIES[em].name for em in em_list] for em_list in emoji
+        ],
         'emoji_flat': emoji_flat,
         'emoji_flat_text': emoji_flat_text,
         'emoji_counts': [len(em) for em in emoji],
-        'emoji_freq': sorted(Counter([len(em) for em in emoji]).items(),
-                             key=lambda x: x[0]),
-        'top_emoji': sorted(Counter(emoji_flat).items(),
-                            key=lambda x: x[1],
-                            reverse=True),
-        'top_emoji_text': sorted(Counter(emoji_flat_text).items(),
-                                 key=lambda x: x[1],
-                                 reverse=True),
-        'top_emoji_groups': sorted(Counter(emoji_groups).items(),
-                                   key=lambda x: x[1],
-                                   reverse=True),
-        'top_emoji_sub_groups': sorted(Counter(emoji_sub_groups).items(),
-                                       key=lambda x: x[1],
-                                       reverse=True),
+        'emoji_freq': sorted(
+            Counter([len(em) for em in emoji]).items(), key=lambda x: x[0]
+        ),
+        'top_emoji': sorted(
+            Counter(emoji_flat).items(), key=lambda x: x[1], reverse=True
+        ),
+        'top_emoji_text': sorted(
+            Counter(emoji_flat_text).items(), key=lambda x: x[1], reverse=True
+        ),
+        'top_emoji_groups': sorted(
+            Counter(emoji_groups).items(), key=lambda x: x[1], reverse=True
+        ),
+        'top_emoji_sub_groups': sorted(
+            Counter(emoji_sub_groups).items(), key=lambda x: x[1], reverse=True
+        ),
         'overview': {
             'num_posts': len(text_list),
             'num_emoji': len(emoji_flat),
             'emoji_per_post': len(emoji_flat) / len(text_list),
             'unique_emoji': len(set(emoji_flat)),
-        }
-
+        },
     }
-    return summary
 
 
 def emoji_search(regex):

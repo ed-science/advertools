@@ -16,6 +16,7 @@ Based on Unicode database v11.0.0
 URL regex from Regular Expressions Cookbook 2nd Ed. O'Reilly
 """
 
+
 __all__ = ['APOSTROPHE', 'BRACKET', 'COLON', 'COMMA', 'CURRENCY',
            'CURRENCY_RAW', 'EXCLAMATION', 'EXCLAMATION_MARK', 'FULL_STOP',
            'HASHTAG', 'HASHTAG_RAW', 'MENTION', 'MENTION_RAW', 'PAREN',
@@ -99,10 +100,8 @@ CURRENCY = re.compile(
     """, re.VERBOSE)
 
 
-EXCLAMATION_RAW = (r'(?i)(?:(?:(?<={})(?:{}*)\s+|^)|(?=¡))(¡?{}+?{}+)'
-                   .format(SENTENCE_END, QUOTE,
-                           EXCLAMATION_MARK_NEG_RAW,
-                           EXCLAMATION_MARK_RAW.replace('¡', '')))
+EXCLAMATION_RAW = f"(?i)(?:(?:(?<={SENTENCE_END})(?:{QUOTE}*)\\s+|^)|(?=¡))(¡?{EXCLAMATION_MARK_NEG_RAW}+?{EXCLAMATION_MARK_RAW.replace('¡', '')}+)"
+
 
 
 EXCLAMATION = re.compile(r"""
@@ -123,10 +122,8 @@ EXCLAMATION = re.compile(r"""
     re.VERBOSE)
 
 
-QUESTION_RAW = (r'(?i)(?:(?:(?<={})(?:{}*)\s+|^)|(?=¿))(¿?{}+?{}+)'
-                .format(SENTENCE_END, QUOTE,
-                        QUESTION_MARK_NEG_RAW,
-                        QUESTION_MARK_RAW.replace('¿', '')))
+QUESTION_RAW = f"(?i)(?:(?:(?<={SENTENCE_END})(?:{QUOTE}*)\\s+|^)|(?=¿))(¿?{QUESTION_MARK_NEG_RAW}+?{QUESTION_MARK_RAW.replace('¿', '')}+)"
+
 
 QUESTION = re.compile(r"""
     (?i)           # case insensitive

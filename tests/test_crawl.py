@@ -56,7 +56,7 @@ dup_crawl_df = pd.read_json('dup_links_crawl.jl', lines=True)
 os.remove('dup_links_crawl.jl')
 
 def test_link_columns_all_exist():
-    assert set(links_columns).difference(crawl_df.columns.tolist()) == set()
+    assert not set(links_columns).difference(crawl_df.columns.tolist())
 
 
 @pytest.mark.parametrize("colname,count", links_columns.items())
@@ -88,8 +88,10 @@ def test_all_img_attrs_have_same_length():
             .apply(set, axis=1)[0].__len__()) == 1
 
 
-dup_links_test = (['https://example_a.com' for i in range(5)] +
-                  ['https://example.com'])
+dup_links_test = ['https://example_a.com' for _ in range(5)] + [
+    'https://example.com'
+]
+
 
 dup_text_test = ['Link Text A',
                  'Link Text A',
@@ -98,7 +100,7 @@ dup_text_test = ['Link Text A',
                  'Link Text C',
                  'Link Other']
 
-dup_nf_test = ['True'] + ['False' for i in range(5)]
+dup_nf_test = ['True'] + ['False' for _ in range(5)]
 
 
 def test_duplicate_links_counted_propery():

@@ -649,24 +649,23 @@ def extract(text_list, regex, key_name, extracted=None, **kwargs):
                      for text in text_list]
     flat = [item for sublist in extracted for item in sublist]
 
-    summary = {
-        key_name + 's': extracted,
-        key_name + 's' + '_flat': flat,
-        key_name + '_counts': [len(x) for x in extracted],
-        key_name + '_freq': sorted(Counter([len(i)
-                                            for i in extracted]).items(),
-                                   key=lambda x: x[0]),
-        'top_' + key_name + 's': sorted(Counter(flat).items(),
-                                        key=lambda x: x[1],
-                                        reverse=True),
+    return {
+        f'{key_name}s': extracted,
+        f'{key_name}s_flat': flat,
+        f'{key_name}_counts': [len(x) for x in extracted],
+        f'{key_name}_freq': sorted(
+            Counter([len(i) for i in extracted]).items(), key=lambda x: x[0]
+        ),
+        f'top_{key_name}s': sorted(
+            Counter(flat).items(), key=lambda x: x[1], reverse=True
+        ),
         'overview': {
             'num_posts': len(text_list),
-            'num_' + key_name + 's': len(flat),
-            key_name + 's' + '_per_post': len(flat) / len(text_list),
-            'unique_' + key_name + 's': len(set(flat)),
-        }
+            f'num_{key_name}s': len(flat),
+            f'{key_name}s_per_post': len(flat) / len(text_list),
+            f'unique_{key_name}s': len(set(flat)),
+        },
     }
-    return summary
 
 
 def extract_currency(text_list, left_chars=20, right_chars=20):
@@ -1202,7 +1201,7 @@ def extract_urls(text_list):
     for urllist in extracted:
         for i, url in enumerate(urllist):
             if url.lower().startswith('www') or url.lower().startswith('ftp'):
-                urllist[i] = 'http://' + url
+                urllist[i] = f'http://{url}'
     domains = [[urlparse(u).netloc for u in e] for e in extracted]
     domains_flat = [item for sublist in domains for item in sublist]
     top_domains = sorted(Counter(domains_flat).items(),
@@ -1315,9 +1314,7 @@ def extract_words(text_list, words_to_extract, entire_words_only=False):
 
     if entire_words_only:
         regex = [r'\b' + x + r'\b' for x in words_to_extract]
-        word_regex = re.compile(r'|'.join(regex), re.IGNORECASE)
     else:
         regex = [r'\S*' + x + r'\S*' for x in words_to_extract]
-        word_regex = re.compile('|'.join(regex), re.IGNORECASE)
-
+    word_regex = re.compile(r'|'.join(regex), re.IGNORECASE)
     return extract(text_list, word_regex, 'word')
